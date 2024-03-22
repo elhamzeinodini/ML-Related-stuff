@@ -26,26 +26,28 @@ for i in range(dataLength) :
     # generating 3 random values between -1 (inclusive) and 1(exclusive) and populating all columns of row i 
     # of matrix X
     X[i, :] = np.random.uniform(-1, 1, featureCount)
+    # noise
+    e = np.random.uniform(-1, 1)
     # coefficients are preferred
     # populating row i and column 0 of matrix Y (matrix Y has one column only)
-    Y[i, 0] = 1.2*X[i,0] - 0.9*X[i,1] + 0.4*X[i,2] - 0.5
+    Y[i, 0] = 1.2*X[i,0] - 0.9*X[i,1] + 0.4*X[i,2] - 0.5 + e
     
 
 # -1 is inclusive : any random number can be -1 
 # 1 is exclusive : no random number can be 1, the range goes up to 1 , but doesn't touch 1
 
-for i in range(featureCount):
-    plt.scatter(X[:, i], Y[:, 0], s=12)
-    plt.xlabel(f'X{i+1}')
-    plt.ylabel('Y')
-    plt.show()
+# for i in range(featureCount):
+#     plt.scatter(X[:, i], Y[:, 0], s=12)
+#     plt.xlabel(f'X{i+1}')
+#     plt.ylabel('Y')
+#     plt.show()
     
     
 def Model (A: np.ndarray, B: float, X: np.ndarray) :
     # A: 3*1 , B:  A floating-point number representing a bias term , X: 1000*3
     res = np.dot(X,A) + B
     # np.dot returns a matrix, res is : 1000 * 1
-    return res.reshape(-1, 1)
+    return res.reshape((-1, 1))
 
 
 # why do we need bias ? 
@@ -84,7 +86,7 @@ def Model (A: np.ndarray, B: float, X: np.ndarray) :
 
 
 def Error(P: np.ndarray, X: np.ndarray, Y: np.ndarray) :
-    A = P[:, -1]
+    A = P[:-1]
     B = P[-1]
     res = Model(A, B, X)
     # ei = Y - res , real minus model predicted value , to the power of 2 
@@ -104,3 +106,22 @@ P0 = np.random.uniform(-1, 1, parametersCount)
 # slsqp : optimization algorithm
 result = opt.minimize(Error, P0, args = (X, Y), method='slsqp')
 print(result)
+
+finalResult = result['x']
+print(finalResult)
+
+A = finalResult[:-1]
+B = finalResult[-1]
+
+modelResult = Model(A, B, X)
+
+plt.scatter(Y[:, 0], modelResult[:, 0], s=12, c="teal")
+# drawing a red line
+plt.plot([-3, 2], [-3, 2], lw=1.2, c="crimson", label="x=y")
+plt.title("Regression Plot")
+plt.xlabel("Target Values")
+plt.ylabel("Predicted Values")
+plt.legend()
+plt.show()
+
+# data is without noise , go up and add a noise using "e = np.random.uniform(-1, 1)"
